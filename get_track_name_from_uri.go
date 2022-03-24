@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// GetTrackNameFromUri is a function to find track in Spotify and return combined name
 func GetTrackNameFromUri(trackUri string, spotifyClient *spotify.Client, ctx context.Context) (string, error) {
 	var fullTrackName []string
 
@@ -25,6 +26,7 @@ func GetTrackNameFromUri(trackUri string, spotifyClient *spotify.Client, ctx con
 	return strings.Join(fullTrackName, " "), nil
 }
 
+// GetNameAndArtistsFromUri GetTrackNameFromUri is a function to find track in Spotify and return Name and Artists separately
 func GetNameAndArtistsFromUri(trackUri string, spotifyClient *spotify.Client, ctx context.Context) (string, string, error) {
 	var fullTrackName []string
 

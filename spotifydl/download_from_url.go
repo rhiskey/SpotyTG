@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// DonwloadFromURL is a function to decide which type of content URL contains and download it
 func DonwloadFromURL(spotifyURL string, spotyclient *spotify.Client, ctx context.Context) string {
 	var trackID string
 	var playlistID string
@@ -17,7 +18,6 @@ func DonwloadFromURL(spotifyURL string, spotyclient *spotify.Client, ctx context
 
 	if len(spotifyURL) == 0 {
 		fmt.Println("=> Spotify URL required.")
-		//_ = cmd.Help()
 		return ""
 	}
 
@@ -44,7 +44,6 @@ func DonwloadFromURL(spotifyURL string, spotyclient *spotify.Client, ctx context
 		savedFile = DownloadSong(trackID, spotyclient, ctx)
 	} else {
 		fmt.Println("=> Only Spotify Album/Playlist/Track URL's are supported.")
-		//_ = cmd.Help()
 	}
 	return savedFile
 }

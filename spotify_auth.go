@@ -9,6 +9,7 @@ import (
 	"os"
 )
 
+// AuthSpotifyWithCreds is a function that authorises spotify client using developer's credentials
 func AuthSpotifyWithCreds() *spotify.Client {
 	ctx := context.Background()
 	config := &clientcredentials.Config{

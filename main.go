@@ -3,33 +3,33 @@ package main
 import (
 	"context"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	spotifydl "github.com/rhiskey/spotytg/spotifydl"
+	"github.com/rhiskey/spotytg/spotifydl"
 	"github.com/zmb3/spotify/v2"
 	"log"
 	"os"
 )
 
-var debug, verbose bool
-var spotifyClient *spotify.Client
+var (
+	ctx           context.Context
+	spotifyClient *spotify.Client
+	bot           *tgbotapi.BotAPI
+)
 
 func init() {
-	//zerolog.SetGlobalLevel(zerolog.ErrorLevel)
-}
+	spotifyClient = AuthSpotifyWithCreds()
+	ctx = context.Background()
 
-func main() {
-	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
+	var err error
+	bot, err = tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
 	if err != nil {
 		panic(err)
 	}
 
 	bot.Debug = true
-
 	log.Printf("Authorized on account %s", bot.Self.UserName)
+}
 
-	spotifyClient = AuthSpotifyWithCreds()
-
-	ctx := context.Background()
-
+func main() {
 	updateConfig := tgbotapi.NewUpdate(0)
 	updateConfig.Timeout = 30
 
@@ -58,19 +58,10 @@ func main() {
 		}
 
 		savedFile := spotifydl.DonwloadFromURL(playlistURL, spotifyClient, ctx)
+
 		file := tgbotapi.FilePath(savedFile)
 
-		//inputAudio := tgbotapi.NewInputMediaAudio(file)
-
 		sendAudioRequest := tgbotapi.NewAudio(update.Message.Chat.ID, file)
-
-		////lazily
-		//var reader io.Reader
-		//
-		//file := tgbotapi.FileReader{
-		//	Name: "image.jpg",
-		//	Reader: reader,
-		//}
 
 		msg.Text = savedFile
 		if _, err := bot.Send(sendAudioRequest); err != nil {
