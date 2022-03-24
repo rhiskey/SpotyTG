@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/rhiskey/spotytg/auths"
 	"github.com/rhiskey/spotytg/spotifydl"
 	"github.com/zmb3/spotify/v2"
 	"log"
@@ -16,7 +17,7 @@ var (
 )
 
 func init() {
-	spotifyClient = AuthSpotifyWithCreds()
+	spotifyClient = auths.AuthSpotifyWithCreds()
 	ctx = context.Background()
 
 	var err error

@@ -9,7 +9,7 @@ import (
 
 // TagFileWithSpotifyMetadata takes in a filename as a string and spotify metadata and uses it to tag the music
 func TagFileWithSpotifyMetadata(fileName string, trackData spotify.SimpleTrack) string {
-	trackArtist := []string{}
+	var trackArtist []string
 	for _, Artist := range trackData.Artists {
 		trackArtist = append(trackArtist, Artist.Name)
 	}

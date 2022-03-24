@@ -1,4 +1,4 @@
-package spotifydl
+package structures
 
 import (
 	"github.com/zmb3/spotify/v2"

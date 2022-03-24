@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/buger/jsonparser"
+	"github.com/rhiskey/spotytg/spotifydl/structures"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -14,13 +15,6 @@ import (
 
 var httpClient = &http.Client{}
 var durationMatchThreshold = 5
-
-type SearchResult struct {
-	Title, Uploader, URL, Duration, ID string
-	Live                               bool
-	SourceName                         string
-	Extra                              []string
-}
 
 func convertStringDurationToSeconds(durationStr string) int {
 	splitEntities := strings.Split(durationStr, ":")
@@ -72,7 +66,7 @@ func getContent(data []byte, index int) []byte {
 
 // shamelessly ripped off from https://github.com/Pauloo27/tuner/blob/11dd4c37862c1c26521a01c8345c22c29ab12749/search/youtube.go#L27
 
-func ytSearch(searchTerm string, limit int) (results []*SearchResult, err error) {
+func ytSearch(searchTerm string, limit int) (results []*structures.SearchResult, err error) {
 	ytSearchUrl := fmt.Sprintf(
 		"https://www.youtube.com/results?search_query=%s", url.QueryEscape(searchTerm),
 	)
@@ -158,7 +152,7 @@ func ytSearch(searchTerm string, limit int) (results []*SearchResult, err error)
 			live = true
 		}
 
-		results = append(results, &SearchResult{
+		results = append(results, &structures.SearchResult{
 			Title:      title,
 			Uploader:   uploader,
 			Duration:   duration,

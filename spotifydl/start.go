@@ -3,6 +3,7 @@ package spotifydl
 import (
 	"context"
 	"fmt"
+	"github.com/rhiskey/spotytg/spotifydl/structures"
 	"github.com/zmb3/spotify/v2"
 	"log"
 	"os"
@@ -12,7 +13,7 @@ import (
 // DownloadPlaylist Start initializes complete program
 func DownloadPlaylist(pid string, spotyclient *spotify.Client, ctx context.Context) {
 	user := spotyclient
-	cli := UserData{
+	cli := structures.UserData{
 		UserClient: user,
 	}
 	playlistID := spotify.ID(pid)
@@ -46,7 +47,7 @@ func DownloadPlaylist(pid string, spotyclient *spotify.Client, ctx context.Conte
 // DownloadAlbum Download album according to
 func DownloadAlbum(aid string, spotyclient *spotify.Client, ctx context.Context) {
 	user := spotyclient
-	cli := UserData{
+	cli := structures.UserData{
 		UserClient: user,
 	}
 	albumID := spotify.ID(aid)
@@ -67,7 +68,7 @@ func DownloadAlbum(aid string, spotyclient *spotify.Client, ctx context.Context)
 // DownloadSong will download a song with its identifier
 func DownloadSong(sid string, spotyclient *spotify.Client, ctx context.Context) string {
 	user := spotyclient
-	cli := UserData{
+	cli := structures.UserData{
 		UserClient: user,
 	}
 	songID := spotify.ID(sid)
@@ -85,7 +86,7 @@ func DownloadSong(sid string, spotyclient *spotify.Client, ctx context.Context) 
 }
 
 // DownloadTrackList Start downloading given list of tracks
-func DownloadTrackList(cli UserData) string {
+func DownloadTrackList(cli structures.UserData) string {
 	var savedFile string
 	fmt.Println("Found", len(cli.TrackList), "tracks")
 	fmt.Println("Searching and downloading tracks")
