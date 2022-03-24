@@ -4,10 +4,18 @@ import (
 	"context"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/rhiskey/spotytg/getplaylist"
 	"log"
 	"os"
-	"regexp"
+	"os/exec"
 )
+
+type Result struct {
+	err   error
+	track getplaylist.Track
+}
+
+var debug, verbose bool
 
 func main() {
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
@@ -19,7 +27,8 @@ func main() {
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
-	spotifyClient := AuthWithCreds()
+	spotifyClient := AuthSpotifyWithCreds()
+
 	ctx := context.Background()
 
 	updateConfig := tgbotapi.NewUpdate(0)
@@ -32,22 +41,22 @@ func main() {
 			continue
 		}
 
-		if !update.Message.Entities[0].IsURL() {
+		if len(update.Message.Entities) == 0 { // ignore any Message without Entities
+			continue
+		}
+
+		if !update.Message.Entities[0].IsURL() { // ignore any Message without URL Entity type
 			continue
 		}
 
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 
 		sentText := update.Message.Text
-		matched, _ := regexp.MatchString(`(?s)^https?:\/\/open\.spotify\.com\/track/(.*?)(\s*\?si=)`, sentText)
-		if !matched {
+
+		trackUri, isSuccess := ProcessMessage(sentText)
+		if !isSuccess {
 			continue
 		}
-
-		re := regexp.MustCompile(`(?s)^https?:\/\/open\.spotify\.com\/track/(.*?)(\s*\?si=)`)
-
-		matches := re.FindAllStringSubmatch(sentText, -1)
-		trackUri := matches[0][1]
 
 		trackName, err := GetTrackNameFromUri(trackUri, spotifyClient, ctx)
 		if err != nil {
@@ -55,6 +64,19 @@ func main() {
 		}
 
 		msg.Text = trackName
+
+		// DL Spotify
+		cmd := exec.Command("spotifydl", sentText)
+		stdout, err := cmd.Output()
+
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+
+		fmt.Print(string(stdout))
+
+		// Get MP3 name and Upload it in Telegram
 
 		if _, err := bot.Send(msg); err != nil {
 			panic(err)

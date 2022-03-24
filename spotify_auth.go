@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-func AuthWithCreds() *spotify.Client {
+func AuthSpotifyWithCreds() *spotify.Client {
 	ctx := context.Background()
 	config := &clientcredentials.Config{
 		ClientID:     os.Getenv("SPOTIFY_ID"),
