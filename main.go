@@ -2,20 +2,19 @@ package main
 
 import (
 	"context"
-	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"github.com/rhiskey/spotytg/getplaylist"
+	spotifydl "github.com/rhiskey/spotytg/spotifydl"
+	"github.com/zmb3/spotify/v2"
 	"log"
 	"os"
-	"os/exec"
 )
 
-type Result struct {
-	err   error
-	track getplaylist.Track
-}
-
 var debug, verbose bool
+var spotifyClient *spotify.Client
+
+func init() {
+	//zerolog.SetGlobalLevel(zerolog.ErrorLevel)
+}
 
 func main() {
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
@@ -27,7 +26,7 @@ func main() {
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
-	spotifyClient := AuthSpotifyWithCreds()
+	spotifyClient = AuthSpotifyWithCreds()
 
 	ctx := context.Background()
 
@@ -51,36 +50,36 @@ func main() {
 
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 
-		sentText := update.Message.Text
+		playlistURL := update.Message.Text
 
-		trackUri, isSuccess := ProcessMessage(sentText)
-		if !isSuccess {
-			continue
-		}
-
-		trackName, err := GetTrackNameFromUri(trackUri, spotifyClient, ctx)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		msg.Text = trackName
-
-		// DL Spotify
-		cmd := exec.Command("spotifydl", sentText)
-		stdout, err := cmd.Output()
-
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-
-		fmt.Print(string(stdout))
-
-		// Get MP3 name and Upload it in Telegram
-
+		msg.Text = "⏳ Downloading..."
 		if _, err := bot.Send(msg); err != nil {
 			panic(err)
 		}
 
+		savedFile := spotifydl.DonwloadFromURL(playlistURL, spotifyClient, ctx)
+		file := tgbotapi.FilePath(savedFile)
+
+		//inputAudio := tgbotapi.NewInputMediaAudio(file)
+
+		sendAudioRequest := tgbotapi.NewAudio(update.Message.Chat.ID, file)
+
+		////lazily
+		//var reader io.Reader
+		//
+		//file := tgbotapi.FileReader{
+		//	Name: "image.jpg",
+		//	Reader: reader,
+		//}
+
+		msg.Text = savedFile
+		if _, err := bot.Send(sendAudioRequest); err != nil {
+			panic(err)
+		}
+
+		e := os.Remove(savedFile)
+		if e != nil {
+			log.Fatal(e)
+		}
 	}
 }
