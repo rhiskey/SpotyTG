@@ -88,8 +88,8 @@ func DownloadSong(sid string, api *structures.Api, ctx context.Context) (string,
 // DownloadTrackList Start downloading given list of tracks
 func DownloadTrackList(cli structures.UserData, api *structures.Api) string {
 	var savedFile string
-	utils.LogWithBot(fmt.Sprintf("🎵 Found ", len(cli.TrackList), " tracks"), api)
-	utils.LogWithBot("🔎 Searching and downloading tracks", api)
+	//utils.LogWithBot(fmt.Sprintf("🎵 Found ", len(cli.TrackList), " tracks"), api)
+	//utils.LogWithBot("🔎 Searching and downloading tracks", api)
 	for _, val := range cli.TrackList {
 		var artistNames []string
 		for _, artistInfo := range val.Artists {
@@ -110,7 +110,7 @@ func DownloadTrackList(cli structures.UserData, api *structures.Api) string {
 		savedFile = Downloader(ytURL, cli.TrackList[index].SimpleTrack, api)
 		fmt.Println()
 	}
-	utils.LogWithBot("✔ Download complete!", api)
+	//utils.LogWithBot("✔ Download complete!", api)
 
 	return savedFile
 }

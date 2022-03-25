@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/rhiskey/spotytg/auths"
 	"github.com/rhiskey/spotytg/spotifydl"
 	"github.com/rhiskey/spotytg/structures"
+	"github.com/rhiskey/spotytg/utils"
 	"github.com/zmb3/spotify/v2"
 	"log"
 	"os"
@@ -45,6 +47,51 @@ func main() {
 			continue
 		}
 
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+		apiEntity.TelegramMessageConfig = msg
+
+		if update.Message.IsCommand() {
+			//	Extract the command from the Message.
+			switch update.Message.Command() {
+			case "help":
+				utils.LogWithBot("🔗 Just send me a link in format https://open.spotify.com/track/111111111111?si=xxxxxxxxx\nI understand /status, /send and /help.", apiEntity)
+			case "status":
+				utils.LogWithBot("\U0001F9EA Beta test", apiEntity)
+			case "send":
+				if len(update.Message.Entities) == 0 { // ignore any Message without Entities
+					continue
+				}
+
+				cmds := update.Message.CommandArguments()
+				fmt.Println(cmds)
+
+				playlistURL := cmds
+
+				//utils.LogWithBot("⏳ Please, wait...", apiEntity)
+
+				savedFile, err := spotifydl.DonwloadFromURL(playlistURL, apiEntity, ctx)
+				if err != nil {
+					continue
+				}
+
+				file := tgbotapi.FilePath(savedFile)
+
+				sendAudioRequest := tgbotapi.NewAudio(update.Message.Chat.ID, file)
+
+				msg.Text = savedFile
+				if _, err := bot.Send(sendAudioRequest); err != nil {
+					log.Panic(err)
+				}
+
+				e := os.Remove(savedFile)
+				if e != nil {
+					log.Fatal(e)
+				}
+			default:
+				utils.LogWithBot("😕 I dont know that command.", apiEntity)
+			}
+		}
+
 		if len(update.Message.Entities) == 0 { // ignore any Message without Entities
 			continue
 		}
@@ -54,31 +101,9 @@ func main() {
 			continue
 		}
 
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
-		apiEntity.TelegramMessageConfig = msg
-
-		////if update.Message.IsCommand() {
-		////	Extract the command from the Message.
-		//switch update.Message.Command() {
-		//case "help":
-		//	msg.Text = "Just send me a link in format https://open.spotify.com/track/111111111111?si=xxxxxxxxx\nI understand /sayhi and /status."
-		//case "sayhi":
-		//	msg.Text = "Hi :)"
-		//case "status":
-		//	msg.Text = "Beta test"
-		//default:
-		//	msg.Text = "I don't know that command"
-		//}
-		//if _, err := bot.Send(msg); err != nil {
-		//	panic(err)
-		//}
-
 		playlistURL := update.Message.Text
 
-		msg.Text = "⏳ Please, wait..."
-		if _, err := bot.Send(msg); err != nil {
-			log.Panic(err)
-		}
+		//utils.LogWithBot("⏳ Please, wait...", apiEntity)
 
 		savedFile, err := spotifydl.DonwloadFromURL(playlistURL, apiEntity, ctx)
 		if err != nil {
