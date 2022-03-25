@@ -53,8 +53,10 @@ func main() {
 		if update.Message.IsCommand() {
 			//	Extract the command from the Message.
 			switch update.Message.Command() {
+			case "start":
+				utils.LogWithBot("🔗 Just send me a link in format https://open.spotify.com/track/111111111111?si=xxxxxxxxx", apiEntity)
 			case "help":
-				utils.LogWithBot("🔗 Just send me a link in format https://open.spotify.com/track/111111111111?si=xxxxxxxxx\nI understand /status, /send and /help.", apiEntity)
+				utils.LogWithBot("ℹ I understand /status, /send and /help.", apiEntity)
 			case "status":
 				utils.LogWithBot("\U0001F9EA Beta test", apiEntity)
 			case "send":
