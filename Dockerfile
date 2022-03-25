@@ -1,20 +1,13 @@
-# syntax=docker/dockerfile:1
+                                         # syntax=docker/dockerfile:1
 
 # Alpine is chosen for its small footprint
 # compared to Ubuntu
-FROM golang:1.18 AS build
+FROM golang:1.18
 
 WORKDIR /app
 
-# Download necessary Go modules
-COPY go.mod ./
-COPY go.sum ./
-RUN go mod download
-RUN go get github.com/rhiskey/spotytg/auths
-RUN go get github.com/rhiskey/spotytg/spotifydl
+ADD . /app
 
-COPY *.go ./
+RUN go build -o main .
 
-RUN go build -o /spotytg
-
-CMD [ "/spotytg" ]
+CMD [ "/app/main" ]

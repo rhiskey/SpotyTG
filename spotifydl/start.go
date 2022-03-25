@@ -3,7 +3,7 @@ package spotifydl
 import (
 	"context"
 	"fmt"
-	"github.com/rhiskey/spotytg/spotifydl/structures"
+	"github.com/rhiskey/spotytg/structures"
 	"github.com/zmb3/spotify/v2"
 	"log"
 	"os"

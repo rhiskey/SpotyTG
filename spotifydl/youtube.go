@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/buger/jsonparser"
-	"github.com/rhiskey/spotytg/spotifydl/structures"
+	"github.com/rhiskey/spotytg/structures"
 	"io"
 	"io/ioutil"
 	"net/http"
