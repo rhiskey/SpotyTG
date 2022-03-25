@@ -5,6 +5,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/rhiskey/spotytg/auths"
 	"github.com/rhiskey/spotytg/spotifydl"
+	"github.com/rhiskey/spotytg/structures"
 	"github.com/zmb3/spotify/v2"
 	"log"
 	"os"
@@ -14,6 +15,7 @@ var (
 	ctx           context.Context
 	spotifyClient *spotify.Client
 	bot           *tgbotapi.BotAPI
+	apiEntity     *structures.Api
 )
 
 func init() {
@@ -27,7 +29,9 @@ func init() {
 	}
 
 	bot.Debug = true
-	log.Printf("Authorized on account %s", bot.Self.UserName)
+	log.Printf("📢 Authorized on account %s", bot.Self.UserName)
+
+	apiEntity = structures.NewApi(spotifyClient, bot)
 }
 
 func main() {
@@ -45,20 +49,41 @@ func main() {
 			continue
 		}
 
+		//update.Message.CommandArguments()
 		if !update.Message.Entities[0].IsURL() { // ignore any Message without URL Entity type
 			continue
 		}
 
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+		apiEntity.TelegramMessageConfig = msg
+
+		////if update.Message.IsCommand() {
+		////	Extract the command from the Message.
+		//switch update.Message.Command() {
+		//case "help":
+		//	msg.Text = "Just send me a link in format https://open.spotify.com/track/111111111111?si=xxxxxxxxx\nI understand /sayhi and /status."
+		//case "sayhi":
+		//	msg.Text = "Hi :)"
+		//case "status":
+		//	msg.Text = "Beta test"
+		//default:
+		//	msg.Text = "I don't know that command"
+		//}
+		//if _, err := bot.Send(msg); err != nil {
+		//	panic(err)
+		//}
 
 		playlistURL := update.Message.Text
 
-		msg.Text = "⏳ Downloading..."
+		msg.Text = "⏳ Please, wait..."
 		if _, err := bot.Send(msg); err != nil {
-			panic(err)
+			log.Panic(err)
 		}
 
-		savedFile := spotifydl.DonwloadFromURL(playlistURL, spotifyClient, ctx)
+		savedFile, err := spotifydl.DonwloadFromURL(playlistURL, apiEntity, ctx)
+		if err != nil {
+			continue
+		}
 
 		file := tgbotapi.FilePath(savedFile)
 
@@ -66,7 +91,7 @@ func main() {
 
 		msg.Text = savedFile
 		if _, err := bot.Send(sendAudioRequest); err != nil {
-			panic(err)
+			log.Panic(err)
 		}
 
 		e := os.Remove(savedFile)
