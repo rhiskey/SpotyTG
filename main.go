@@ -22,6 +22,18 @@ var (
 	wg            sync.WaitGroup
 )
 
+var commandsKeyboard = tgbotapi.NewReplyKeyboard(
+	tgbotapi.NewKeyboardButtonRow(
+		tgbotapi.NewKeyboardButton("/status"),
+		tgbotapi.NewKeyboardButton("/help"),
+	),
+	//tgbotapi.NewKeyboardButtonRow(
+	//	tgbotapi.NewKeyboardButton("4"),
+	//	tgbotapi.NewKeyboardButton("5"),
+	//	tgbotapi.NewKeyboardButton("6"),
+	//),
+)
+
 func init() {
 	spotifyClient = auths.AuthSpotifyWithCreds()
 	ctx = context.Background()
@@ -39,7 +51,7 @@ func init() {
 	wg.Add(4)
 }
 
-func processUrl(i int, playlistURL string, update tgbotapi.Update, msg tgbotapi.MessageConfig) {
+func processUrl(i int, playlistURL string, update tgbotapi.Update, api *structures.Api) {
 	savedFile, err := spotifydl.DonwloadFromURL(playlistURL, apiEntity, ctx)
 	if err != nil {
 		return
@@ -49,7 +61,7 @@ func processUrl(i int, playlistURL string, update tgbotapi.Update, msg tgbotapi.
 
 	sendAudioRequest := tgbotapi.NewAudio(update.Message.Chat.ID, file)
 
-	msg.Text = savedFile
+	api.TelegramMessageConfig.Text = savedFile
 	if _, err := bot.Send(sendAudioRequest); err != nil {
 		log.Panic(err)
 	}
@@ -73,16 +85,32 @@ func main() {
 		if update.Message == nil { // ignore any non-Message updates
 			continue
 		}
+		if update.CallbackQuery != nil {
+			// Respond to the callback query, telling Telegram to show the user
+			// a message with the data received.
+			callback := tgbotapi.NewCallback(update.CallbackQuery.ID, update.CallbackQuery.Data)
+			if _, err := bot.Request(callback); err != nil {
+				panic(err)
+			}
 
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+			// And finally, send a message containing the data received.
+			msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data)
+			if _, err := bot.Send(msg); err != nil {
+				panic(err)
+			}
+		}
+
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
 		apiEntity.TelegramMessageConfig = msg
 
 		if update.Message.IsCommand() {
 			//	Extract the command from the Message.
 			switch update.Message.Command() {
 			case "start":
+				apiEntity.TelegramMessageConfig.ReplyMarkup = commandsKeyboard
 				utils.LogWithBot("🔗 Just send me a link that looks like: https://open.spotify.com/track/111111111111?si=xxxxxxxxx\nFeel free to use /help", apiEntity)
 			case "help":
+				apiEntity.TelegramMessageConfig.ReplyMarkup = commandsKeyboard
 				utils.LogWithBot("ℹ I understand:\n/status\n/send URL (alias /download, /play)\n/help", apiEntity)
 			case "status":
 				utils.LogWithBot("\U0001F9EA Beta test", apiEntity)
@@ -101,36 +129,46 @@ func main() {
 
 				//guard <- struct{}{}
 				go func(n int) {
-					processUrl(n, playlistURL, update, msg)
+					processUrl(n, playlistURL, update, apiEntity)
 					//<-guard
 				}(update.Message.Date)
-
-				//processUrl(playlistURL, update, msg)
-				//utils.LogWithBot("⏳ Please, wait...", apiEntity)
 
 			default:
 				utils.LogWithBot("😕 I dont know that command.", apiEntity)
 			}
 		}
 
-		if len(update.Message.Entities) == 0 { // ignore any Message without Entities
-			continue
-		}
+		switch update.Message.Text {
+		case "open":
+			msg.ReplyMarkup = commandsKeyboard
+			if _, err := bot.Send(msg); err != nil {
+				panic(err)
+			}
+		case "close":
+			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+			if _, err := bot.Send(msg); err != nil {
+				panic(err)
+			}
+		default:
+			if len(update.Message.Entities) == 0 { // ignore any Message without Entities
+				continue
+			}
 
-		if !update.Message.Entities[0].IsURL() { // ignore any Message without URL Entity type
-			continue
-		}
+			if !update.Message.Entities[0].IsURL() { // ignore any Message without URL Entity type
+				continue
+			}
 
-		playlistURL := update.Message.Text
+			playlistURL := update.Message.Text
+			update := update
+			//guard <- struct{}{}
+			go func(n int) {
+				processUrl(n, playlistURL, update, apiEntity)
+				//<-guard
+			}(update.Message.Date)
+
+		}
 
 		//utils.LogWithBot("⏳ Please, wait...", apiEntity)
 
-		//guard <- struct{}{}
-		go func(n int) {
-			processUrl(n, playlistURL, update, msg)
-			//<-guard
-		}(update.Message.Date)
-
-		//go processUrl(playlistURL, update, msg)
 	}
 }
