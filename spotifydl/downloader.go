@@ -29,6 +29,6 @@ func Downloader(url string, track spotify.FullTrack, api *structures.Api) string
 	}
 
 	// Tag the file with metadataa
-	return utils.TagFileWithSpotifyMetadataV2(nameTag, track.SimpleTrack, api)
-	//return utils.TagFileWithSpotifyMetadata(nameTag, track)
+	//return utils.TagFileWithSpotifyMetadataV2(nameTag, track.SimpleTrack, api)
+	return utils.TagFileWithSpotifyMetadata(nameTag, track)
 }

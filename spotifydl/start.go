@@ -92,6 +92,7 @@ func DownloadSong(ctx context.Context, sid string, api *structures.Api) (string,
 func DownloadTrackList(cli structures.UserData, api *structures.Api) []string {
 	var savedFiles []string
 	var savedFile string
+	var searchTerm string
 	//utils.LogWithBot(fmt.Sprintf("🎵 Found ", len(cli.TrackList), " tracks"), api)
 	//utils.LogWithBot("🔎 Searching and downloading tracks", api)
 	for _, val := range cli.TrackList {
@@ -99,7 +100,7 @@ func DownloadTrackList(cli structures.UserData, api *structures.Api) []string {
 		for _, artistInfo := range val.Artists {
 			artistNames = append(artistNames, artistInfo.Name)
 		}
-		searchTerm := strings.Join(artistNames, " ") + " " + val.Name
+		searchTerm = strings.Join(artistNames, " ") + " " + val.Name
 		youtubeID, err := GetYoutubeId(searchTerm, val.Duration/1000)
 		if err != nil {
 			log.Println(err)
@@ -112,7 +113,8 @@ func DownloadTrackList(cli structures.UserData, api *structures.Api) []string {
 	for index, track := range cli.YoutubeIDList {
 		fmt.Println()
 		ytURL := "https://www.youtube.com/watch?v=" + track
-		utils.LogWithBot(fmt.Sprintf("🔄️ Downloading: "+cli.TrackList[index].Name), api)
+
+		utils.LogWithBot(fmt.Sprintf("🔄️ Downloading: %s", searchTerm), api)
 		savedFile = Downloader(ytURL, cli.TrackList[index], api)
 		savedFiles = append(savedFiles, savedFile)
 		fmt.Println()

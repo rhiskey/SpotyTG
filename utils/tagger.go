@@ -28,13 +28,13 @@ func TagFileWithSpotifyMetadata(fileName string, trackData spotify.FullTrack) st
 	mp3File, err := id3v2.Open(fileName, id3v2.Options{Parse: true})
 	if err != nil {
 		rollbar.Error(err)
-		panic(err)
+		log.Panic(err)
 	}
 	defer func(mp3File *id3v2.Tag) {
 		err := mp3File.Close()
 		if err != nil {
 			rollbar.Error(err)
-			panic(err)
+			log.Panic(err)
 		}
 	}(mp3File)
 
@@ -58,6 +58,7 @@ func TagFileWithSpotifyMetadata(fileName string, trackData spotify.FullTrack) st
 		} else {
 			fmt.Println("An error occured while downloading album art ", err)
 			rollbar.Error(err)
+			log.Panic(err)
 		}
 	} else {
 		fmt.Println("No album art found for ", trackData.Name)
