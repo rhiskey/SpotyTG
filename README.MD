@@ -1,7 +1,6 @@
 # SpotyTG
 
 [![Go](https://github.com/rhiskey/SpotyTG/actions/workflows/go.yml/badge.svg)](https://github.com/rhiskey/SpotyTG/actions/workflows/go.yml)
-[![goreleaser](https://github.com/rhiskey/SpotyTG/actions/workflows/release.yml/badge.svg)](https://github.com/rhiskey/SpotyTG/actions/workflows/release.yml)
 [![CodeQL](https://github.com/rhiskey/SpotyTG/actions/workflows/codeql.yml/badge.svg)](https://github.com/rhiskey/SpotyTG/actions/workflows/codeql.yml)
 
 Telegram Bot for music import from Spotify
