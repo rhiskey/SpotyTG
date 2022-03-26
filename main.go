@@ -57,7 +57,7 @@ func init() {
 }
 
 func processUrl(i int, playlistURL string, update tgbotapi.Update, msg tgbotapi.MessageConfig) {
-	savedFile, err := spotifydl.DonwloadFromURL(playlistURL, apiEntity, ctx)
+	savedFile, err := spotifydl.DonwloadFromURL(ctx, playlistURL, apiEntity)
 	if err != nil {
 		rollbar.Error(err)
 		return

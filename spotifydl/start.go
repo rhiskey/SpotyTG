@@ -13,7 +13,7 @@ import (
 )
 
 // DownloadPlaylist Start initializes complete program
-func DownloadPlaylist(pid string, api *structures.Api, ctx context.Context) {
+func DownloadPlaylist(ctx context.Context, pid string, api *structures.Api) {
 	user := api.SpotifyClient
 	cli := structures.UserData{
 		UserClient: user,
@@ -47,7 +47,7 @@ func DownloadPlaylist(pid string, api *structures.Api, ctx context.Context) {
 }
 
 // DownloadAlbum Download album according to
-func DownloadAlbum(aid string, api *structures.Api, ctx context.Context) {
+func DownloadAlbum(ctx context.Context, aid string, api *structures.Api) {
 	user := api.SpotifyClient
 	cli := structures.UserData{
 		UserClient: user,
@@ -67,7 +67,7 @@ func DownloadAlbum(aid string, api *structures.Api, ctx context.Context) {
 }
 
 // DownloadSong will download a song with its identifier
-func DownloadSong(sid string, api *structures.Api, ctx context.Context) (string, error) {
+func DownloadSong(ctx context.Context, sid string, api *structures.Api) (string, error) {
 	user := api.SpotifyClient
 	cli := structures.UserData{
 		UserClient: user,

@@ -2,6 +2,8 @@
 
 Telegram Bot for music import from Spotify
 
+[![giphy.gif](https://media.giphy.com/media/PdK4aHlXmBmOvpPU04/giphy.gif)](https://media.giphy.com/media/PdK4aHlXmBmOvpPU04/giphy.gif)
+
 ---
 ### Environment variables to pass in main.go:
 ```bash

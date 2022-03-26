@@ -9,7 +9,7 @@ import (
 )
 
 // DonwloadFromURL is a function to decide which type of content URL contains and download it
-func DonwloadFromURL(spotifyURL string, api *structures.Api, ctx context.Context) (string, error) {
+func DonwloadFromURL(ctx context.Context, spotifyURL string, api *structures.Api) (string, error) {
 	var trackID string
 	//var playlistID string
 	//var albumID string
@@ -35,15 +35,15 @@ func DonwloadFromURL(spotifyURL string, api *structures.Api, ctx context.Context
 
 	//if strings.Contains(spotifyURL, "album") {
 	//	albumID = spotifyID
-	//	DownloadAlbum(albumID, api, ctx)
+	//	DownloadAlbum(ctx, albumID, api)
 	//} else if strings.Contains(spotifyURL, "playlist") {
 	//	playlistID = spotifyID
-	//	DownloadPlaylist(playlistID, api, ctx)
+	//	DownloadPlaylist(ctx, playlistID, api)
 	//} else
 	if strings.Contains(spotifyURL, "track") {
 		trackID = spotifyID
 		var err error
-		savedFile, err = DownloadSong(trackID, api, ctx)
+		savedFile, err = DownloadSong(ctx, trackID, api)
 		if err != nil {
 			return "", err
 		}
