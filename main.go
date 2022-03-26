@@ -40,10 +40,22 @@ func init() {
 	//rollbar.SetServerHost("web.1")                       // optional override; defaults to hostname
 	rollbar.SetServerRoot("github.com/rhiskey/spotytg") // path of project (required for GitHub integration and non-project stacktrace collapsing)  - where repo is set up for the project, the server.root has to be "/"
 
+	f, err := os.OpenFile("log.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+			log.Fatalf("error closing file: %v", err)
+		}
+	}(f)
+
+	log.SetOutput(f)
+
 	spotifyClient = auths.AuthSpotifyWithCreds()
 	ctx = context.Background()
 
-	var err error
 	bot, err = tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
 	if err != nil {
 		rollbar.Critical(err)
@@ -56,12 +68,14 @@ func init() {
 	apiEntity = structures.NewApi(spotifyClient, bot)
 }
 
-func processUrl(i int, playlistURL string, update tgbotapi.Update, msg tgbotapi.MessageConfig) {
+func ProcessUrl(i int, playlistURL string, update tgbotapi.Update, msg tgbotapi.MessageConfig) {
 	savedFile, err := spotifydl.DonwloadFromURL(ctx, playlistURL, apiEntity)
 	if err != nil {
+		log.Print(err)
 		rollbar.Error(err)
 		return
 	}
+	log.Println(i)
 
 	file := tgbotapi.FilePath(savedFile)
 
@@ -81,9 +95,6 @@ func processUrl(i int, playlistURL string, update tgbotapi.Update, msg tgbotapi.
 }
 
 func main() {
-	//maxGoroutines := 8
-	//guard := make(chan struct{}, maxGoroutines)
-
 	updateConfig := tgbotapi.NewUpdate(0)
 	updateConfig.Timeout = 30
 
@@ -137,12 +148,8 @@ func main() {
 				words := strings.Fields(cmds)
 				playlistURL := words[0]
 
-				//guard <- struct{}{}
 				go func(n int) {
-					rollbar.Info("Message body goes here")
-					//rollbar.WrapAndWait(doSomething)
-					processUrl(n, playlistURL, update, msg)
-					//<-guard
+					ProcessUrl(n, playlistURL, update, msg)
 				}(update.Message.Date)
 
 			default:
@@ -155,13 +162,13 @@ func main() {
 			msg.ReplyMarkup = commandsKeyboard
 			if _, err := bot.Send(msg); err != nil {
 				rollbar.Critical(err)
-				panic(err)
+				log.Panic(err)
 			}
 		case "close":
 			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 			if _, err := bot.Send(msg); err != nil {
 				rollbar.Critical(err)
-				panic(err)
+				log.Panic(err)
 			}
 		default:
 			if len(update.Message.Entities) == 0 { // ignore any Message without Entities
@@ -174,10 +181,8 @@ func main() {
 
 			playlistURL := update.Message.Text
 			update := update
-			//guard <- struct{}{}
 			go func(n int) {
-				processUrl(n, playlistURL, update, msg)
-				//<-guard
+				ProcessUrl(n, playlistURL, update, msg)
 			}(update.Message.Date)
 
 		}

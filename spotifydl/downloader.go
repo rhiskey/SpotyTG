@@ -6,7 +6,7 @@ import (
 	"github.com/rhiskey/spotytg/utils"
 	"github.com/rollbar/rollbar-go"
 	"github.com/zmb3/spotify/v2"
-	"os"
+	"log"
 	"os/exec"
 )
 
@@ -25,7 +25,7 @@ func Downloader(url string, track spotify.FullTrack, api *structures.Api) string
 		//fmt.Println(ytdlCmd.String())
 		utils.LogWithBot(fmt.Sprintf(ytdlCmd.String()), api)
 		rollbar.Critical(err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 
 	// Tag the file with metadataa

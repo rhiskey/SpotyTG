@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -11,7 +12,7 @@ import (
 func DownloadFile(url string) ([]byte, error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
