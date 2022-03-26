@@ -4,10 +4,13 @@ before:
 builds:
   - env:
       - CGO_ENABLED=0
+      - ROLLBAR_TOKEN={{ secrets.ROLLBAR_TOKEN }}
+      - TELEGRAM_APITOKEN={{ secrets.TELEGRAM_APITOKEN }}
+      - SPOTIFY_ID={{ secrets.SPOTIFY_ID }}
+      - SPOTIFY_SECRET={{ secrets.SPOTIFY_SECRET }}
     goos:
       - linux
       - windows
-      - darwin
 archives:
   - format: binary
 checksum:
