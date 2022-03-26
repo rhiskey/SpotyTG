@@ -109,7 +109,7 @@ func DownloadTrackList(cli structures.UserData, api *structures.Api) string {
 		fmt.Println()
 		ytURL := "https://www.youtube.com/watch?v=" + track
 		utils.LogWithBot(fmt.Sprintf("🔄️ Downloading: "+cli.TrackList[index].Name), api)
-		savedFile = Downloader(ytURL, cli.TrackList[index].SimpleTrack, api)
+		savedFile = Downloader(ytURL, cli.TrackList[index], api)
 		fmt.Println()
 	}
 	//utils.LogWithBot("✔ Download complete!", api)
