@@ -6,6 +6,7 @@ require (
 	github.com/bogem/id3v2 v1.1.1
 	github.com/buger/jsonparser v1.1.1
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
+	github.com/rollbar/rollbar-go v1.4.2
 	github.com/zmb3/spotify/v2 v2.0.1
 	golang.org/x/oauth2 v0.0.0-20210810183815-faf39c7919d5
 )

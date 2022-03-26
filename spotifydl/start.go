@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/rhiskey/spotytg/structures"
 	"github.com/rhiskey/spotytg/utils"
+	"github.com/rollbar/rollbar-go"
 	"github.com/zmb3/spotify/v2"
 	"log"
 	"strings"
@@ -98,6 +99,7 @@ func DownloadTrackList(cli structures.UserData, api *structures.Api) string {
 		searchTerm := strings.Join(artistNames, " ") + " " + val.Name
 		youtubeID, err := GetYoutubeId(searchTerm, val.Duration/1000)
 		if err != nil {
+			rollbar.Error(err)
 			utils.LogWithBot(fmt.Sprintf("⚠ Error occured for %s error: %s", val.Name, err), api)
 			continue
 		}

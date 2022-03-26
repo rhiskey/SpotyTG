@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/bogem/id3v2"
 	"github.com/rhiskey/spotytg/structures"
+	"github.com/rollbar/rollbar-go"
 	"github.com/zmb3/spotify/v2"
 	"log"
 	"strings"
@@ -19,12 +20,13 @@ func TagFileWithSpotifyMetadata(fileName string, trackData spotify.SimpleTrack, 
 
 	mp3File, err := id3v2.Open(fileName, id3v2.Options{Parse: true})
 	if err != nil {
+		rollbar.Error(err)
 		panic(err)
 	}
 	defer func(mp3File *id3v2.Tag) {
 		err := mp3File.Close()
 		if err != nil {
-
+			rollbar.Critical(err)
 		}
 	}(mp3File)
 
@@ -33,6 +35,7 @@ func TagFileWithSpotifyMetadata(fileName string, trackData spotify.SimpleTrack, 
 
 	if err = mp3File.Save(); err != nil {
 		LogWithBot(fmt.Sprintf("⛔ Error while saving a tag: ", err), api)
+		rollbar.Critical(err)
 		log.Fatal("Error while saving a tag: ", err)
 	}
 

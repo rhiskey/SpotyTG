@@ -7,11 +7,11 @@ import (
 	"github.com/rhiskey/spotytg/spotifydl"
 	"github.com/rhiskey/spotytg/structures"
 	"github.com/rhiskey/spotytg/utils"
+	"github.com/rollbar/rollbar-go"
 	"github.com/zmb3/spotify/v2"
 	"log"
 	"os"
 	"strings"
-	"sync"
 )
 
 var (
@@ -19,7 +19,6 @@ var (
 	spotifyClient *spotify.Client
 	bot           *tgbotapi.BotAPI
 	apiEntity     *structures.Api
-	wg            sync.WaitGroup
 )
 
 var commandsKeyboard = tgbotapi.NewReplyKeyboard(
@@ -35,12 +34,19 @@ var commandsKeyboard = tgbotapi.NewReplyKeyboard(
 )
 
 func init() {
+	rollbar.SetToken(os.Getenv("ROLLBAR_TOKEN"))
+	rollbar.SetEnvironment("production") // defaults to "development"
+	//rollbar.SetCodeVersion("v2")                         // optional Git hash/branch/tag (required for GitHub integration)
+	//rollbar.SetServerHost("web.1")                       // optional override; defaults to hostname
+	rollbar.SetServerRoot("github.com/rhiskey/spotytg") // path of project (required for GitHub integration and non-project stacktrace collapsing)  - where repo is set up for the project, the server.root has to be "/"
+
 	spotifyClient = auths.AuthSpotifyWithCreds()
 	ctx = context.Background()
 
 	var err error
 	bot, err = tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
 	if err != nil {
+		rollbar.Critical(err)
 		panic(err)
 	}
 
@@ -48,12 +54,12 @@ func init() {
 	log.Printf("📢 Authorized on account %s", bot.Self.UserName)
 
 	apiEntity = structures.NewApi(spotifyClient, bot)
-	wg.Add(4)
 }
 
-func processUrl(i int, playlistURL string, update tgbotapi.Update, api *structures.Api) {
+func processUrl(i int, playlistURL string, update tgbotapi.Update, msg tgbotapi.MessageConfig) {
 	savedFile, err := spotifydl.DonwloadFromURL(playlistURL, apiEntity, ctx)
 	if err != nil {
+		rollbar.Error(err)
 		return
 	}
 
@@ -61,13 +67,15 @@ func processUrl(i int, playlistURL string, update tgbotapi.Update, api *structur
 
 	sendAudioRequest := tgbotapi.NewAudio(update.Message.Chat.ID, file)
 
-	api.TelegramMessageConfig.Text = savedFile
+	msg.Text = savedFile
 	if _, err := bot.Send(sendAudioRequest); err != nil {
+		rollbar.Error(err)
 		log.Panic(err)
 	}
 
 	e := os.Remove(savedFile)
 	if e != nil {
+		rollbar.Critical(err)
 		log.Fatal(e)
 	}
 }
@@ -90,13 +98,15 @@ func main() {
 			// a message with the data received.
 			callback := tgbotapi.NewCallback(update.CallbackQuery.ID, update.CallbackQuery.Data)
 			if _, err := bot.Request(callback); err != nil {
-				panic(err)
+				rollbar.Error(err)
+				log.Panic(err)
 			}
 
 			// And finally, send a message containing the data received.
 			msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data)
 			if _, err := bot.Send(msg); err != nil {
-				panic(err)
+				rollbar.Error(err)
+				log.Panic(err)
 			}
 		}
 
@@ -111,7 +121,7 @@ func main() {
 				utils.LogWithBot("🔗 Just send me a link that looks like: https://open.spotify.com/track/111111111111?si=xxxxxxxxx\nFeel free to use /help", apiEntity)
 			case "help":
 				apiEntity.TelegramMessageConfig.ReplyMarkup = commandsKeyboard
-				utils.LogWithBot("ℹ I understand:\n/status\n/send URL (alias /download, /play)\n/help", apiEntity)
+				utils.LogWithBot("ℹ I understand:\n/status\n/send URL (alias /download, /play)\n/help\nOr just send me a link that looks like: https://open.spotify.com/track/", apiEntity)
 			case "status":
 				utils.LogWithBot("\U0001F9EA Beta test", apiEntity)
 			case "send", "download", "play":
@@ -129,7 +139,9 @@ func main() {
 
 				//guard <- struct{}{}
 				go func(n int) {
-					processUrl(n, playlistURL, update, apiEntity)
+					rollbar.Info("Message body goes here")
+					//rollbar.WrapAndWait(doSomething)
+					processUrl(n, playlistURL, update, msg)
 					//<-guard
 				}(update.Message.Date)
 
@@ -142,11 +154,13 @@ func main() {
 		case "open":
 			msg.ReplyMarkup = commandsKeyboard
 			if _, err := bot.Send(msg); err != nil {
+				rollbar.Critical(err)
 				panic(err)
 			}
 		case "close":
 			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 			if _, err := bot.Send(msg); err != nil {
+				rollbar.Critical(err)
 				panic(err)
 			}
 		default:
@@ -162,7 +176,7 @@ func main() {
 			update := update
 			//guard <- struct{}{}
 			go func(n int) {
-				processUrl(n, playlistURL, update, apiEntity)
+				processUrl(n, playlistURL, update, msg)
 				//<-guard
 			}(update.Message.Date)
 

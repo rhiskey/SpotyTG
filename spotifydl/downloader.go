@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/rhiskey/spotytg/structures"
 	"github.com/rhiskey/spotytg/utils"
+	"github.com/rollbar/rollbar-go"
 	"github.com/zmb3/spotify/v2"
 	"os"
 	"os/exec"
@@ -23,6 +24,7 @@ func Downloader(url string, track spotify.SimpleTrack, api *structures.Api) stri
 		//fmt.Println("Make sure you have youtube-dl and ffmpeg installed on this system. This was the command we tried to run:")
 		//fmt.Println(ytdlCmd.String())
 		utils.LogWithBot(fmt.Sprintf(ytdlCmd.String()), api)
+		rollbar.Critical(err)
 		os.Exit(1)
 	}
 

@@ -9,6 +9,7 @@ import (
 
 func LogWithBot(message string, api *structures.Api) {
 	fmt.Println(message)
+	//rollbar.Info(message)
 	api.TelegramMessageConfig.Text = message
 	if _, err := api.TelegramBot.Send(api.TelegramMessageConfig); err != nil {
 		log.Panic(err)
