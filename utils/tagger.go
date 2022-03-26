@@ -98,7 +98,7 @@ func TagFileWithSpotifyMetadataV2(fileName string, trackData spotify.SimpleTrack
 	mp3File.SetArtist(artistTag)
 
 	if err = mp3File.Save(); err != nil {
-		LogWithBot(fmt.Sprintf("⛔ Error while saving a tag: ", err), api)
+		LogWithBot(fmt.Sprintf("⛔ Error while saving a tag: %s", err), api)
 		rollbar.Critical(err)
 		log.Fatal("Error while saving a tag: ", err)
 	}
