@@ -121,10 +121,10 @@ func main() {
 				utils.LogWithBot("🔗 Just send me a link that looks like: https://open.spotify.com/track/111111111111?si=xxxxxxxxx\nFeel free to use /help", apiEntity)
 			case "help":
 				apiEntity.TelegramMessageConfig.ReplyMarkup = commandsKeyboard
-				utils.LogWithBot("ℹ I understand:\n/status\n/send URL (alias /download, /play)\n/help\nOr just send me a link that looks like: https://open.spotify.com/track/", apiEntity)
+				utils.LogWithBot("ℹ I understand:\n/status\n/send URL (aliases /s, /download /d, /play /p)\n/help\nOr just send me a link that looks like: https://open.spotify.com/track/", apiEntity)
 			case "status":
 				utils.LogWithBot("\U0001F9EA Beta test", apiEntity)
-			case "send", "download", "play":
+			case "send", "download", "play", "s", "d", "p":
 				if len(update.Message.Entities) == 0 { // ignore any Message without Entities
 					continue
 				}
