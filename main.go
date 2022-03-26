@@ -54,7 +54,7 @@ func init() {
 
 		log.SetOutput(f)
 	}
-	
+
 	spotifyClient = auths.AuthSpotifyWithCreds()
 	ctx = context.Background()
 
