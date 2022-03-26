@@ -81,9 +81,9 @@ func main() {
 			//	Extract the command from the Message.
 			switch update.Message.Command() {
 			case "start":
-				utils.LogWithBot("🔗 Just send me a link in format https://open.spotify.com/track/111111111111?si=xxxxxxxxx", apiEntity)
+				utils.LogWithBot("🔗 Just send me a link that looks like: https://open.spotify.com/track/111111111111?si=xxxxxxxxx\nFeel free to use /help", apiEntity)
 			case "help":
-				utils.LogWithBot("ℹ I understand /status, /send (same as /download, /play) and /help.", apiEntity)
+				utils.LogWithBot("ℹ I understand:\n/status\n/send URL (alias /download, /play)\n/help", apiEntity)
 			case "status":
 				utils.LogWithBot("\U0001F9EA Beta test", apiEntity)
 			case "send", "download", "play":
@@ -92,6 +92,10 @@ func main() {
 				}
 
 				cmds := update.Message.CommandArguments()
+				if len(cmds) == 0 {
+					utils.LogWithBot("\U0001F97A Missing URL after command, see /help.", apiEntity)
+					continue
+				}
 				words := strings.Fields(cmds)
 				playlistURL := words[0]
 
