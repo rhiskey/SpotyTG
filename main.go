@@ -40,9 +40,8 @@ func init() {
 	//rollbar.SetServerHost("web.1")                       // optional override; defaults to hostname
 	rollbar.SetServerRoot("github.com/rhiskey/spotytg") // path of project (required for GitHub integration and non-project stacktrace collapsing)  - where repo is set up for the project, the server.root has to be "/"
 
-	var err error
 	if os.Getenv("DEBUG") == "true" {
-		f, _ := os.OpenFile("log.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		f, err := os.OpenFile("log.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
 			log.Fatalf("error opening file: %v", err)
 		}
@@ -59,13 +58,13 @@ func init() {
 	spotifyClient = auths.AuthSpotifyWithCreds()
 	ctx = context.Background()
 
-	bot, err = tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
 	if err != nil {
 		rollbar.Critical(err)
 		panic(err)
 	}
 
-	bot.Debug = true
+	bot.Debug = false
 	log.Printf("📢 Authorized on account %s", bot.Self.UserName)
 
 	apiEntity = structures.NewApi(spotifyClient, bot)
