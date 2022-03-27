@@ -35,9 +35,9 @@ var commandsKeyboard = tgbotapi.NewReplyKeyboard(
 
 func init() {
 	rollbar.SetToken(os.Getenv("ROLLBAR_TOKEN"))
-	rollbar.SetEnvironment("production") // defaults to "development"
-	//rollbar.SetCodeVersion("v2")                         // optional Git hash/branch/tag (required for GitHub integration)
-	//rollbar.SetServerHost("web.1")                       // optional override; defaults to hostname
+	rollbar.SetEnvironment("production")
+	rollbar.SetCodeVersion("v1.1.3") // optional Git hash/branch/tag (required for GitHub integration)
+	//rollbar.SetServerHost("release.1")                  // optional override; defaults to hostname
 	rollbar.SetServerRoot("github.com/rhiskey/spotytg") // path of project (required for GitHub integration and non-project stacktrace collapsing)  - where repo is set up for the project, the server.root has to be "/"
 
 	if os.Getenv("DEBUG") == "true" {
@@ -76,6 +76,8 @@ func init() {
 }
 
 func ProcessUrl(i int, playlistURL string, update tgbotapi.Update, msg tgbotapi.MessageConfig) {
+	spotifyClient = auths.AuthSpotifyWithCreds()
+	apiEntity.SpotifyClient = spotifyClient
 	savedFile, err := spotifydl.DonwloadFromURL(ctx, playlistURL, apiEntity)
 	if err != nil {
 		log.Print(err)

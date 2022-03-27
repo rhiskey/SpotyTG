@@ -32,8 +32,8 @@ Make sure you have **golang**, **youtube-dl** and **ffmpeg** installed.
 ### Environment variables to pass:
 ```bash
 DEBUG=false 
-ROLLBAR_TOKEN=4a505f108ef0402b9b2db8f363793946
+ROLLBAR_TOKEN=xxxxxxxxxxxxxxxxxxxx111111
 TELEGRAM_APITOKEN=11111111111:XXXXXXXXXXXxxxxxxxxxx
-SPOTIFY_ID=05c5bdfd503c4a489961d2e63f917b1d
+SPOTIFY_ID=xxxxxxxxxxxxxxxxxxxx111111
 SPOTIFY_SECRET=xxxxxxxxxxxxxxxxxxxx111111
 ```
