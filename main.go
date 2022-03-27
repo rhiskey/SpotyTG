@@ -40,13 +40,14 @@ func init() {
 	//rollbar.SetServerHost("web.1")                       // optional override; defaults to hostname
 	rollbar.SetServerRoot("github.com/rhiskey/spotytg") // path of project (required for GitHub integration and non-project stacktrace collapsing)  - where repo is set up for the project, the server.root has to be "/"
 
+	var err error
 	if os.Getenv("DEBUG") == "true" {
-		f, err := os.OpenFile("log.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		f, _ := os.OpenFile("log.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
 			log.Fatalf("error opening file: %v", err)
 		}
 		defer func(f *os.File) {
-			err := f.Close()
+			err = f.Close()
 			if err != nil {
 				log.Fatalf("error closing file: %v", err)
 			}
