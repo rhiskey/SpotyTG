@@ -58,13 +58,18 @@ func init() {
 	spotifyClient = auths.AuthSpotifyWithCreds()
 	ctx = context.Background()
 
-	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
+	var err error
+	bot, err = tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
 	if err != nil {
 		rollbar.Critical(err)
 		panic(err)
 	}
+	if os.Getenv("DEBUG") == "true" {
+		bot.Debug = true
+	} else {
+		bot.Debug = false
+	}
 
-	bot.Debug = false
 	log.Printf("📢 Authorized on account %s", bot.Self.UserName)
 
 	apiEntity = structures.NewApi(spotifyClient, bot)
@@ -96,6 +101,94 @@ func ProcessUrl(i int, playlistURL string, update tgbotapi.Update, msg tgbotapi.
 	}
 }
 
+func handleUpdate(update tgbotapi.Update) {
+	if update.Message == nil { // ignore any non-Message updates
+		return
+	}
+	if update.CallbackQuery != nil {
+		// Respond to the callback query, telling Telegram to show the user
+		// a message with the data received.
+		callback := tgbotapi.NewCallback(update.CallbackQuery.ID, update.CallbackQuery.Data)
+		if _, err := bot.Request(callback); err != nil {
+			rollbar.Error(err)
+			log.Panic(err)
+		}
+
+		// And finally, send a message containing the data received.
+		msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data)
+		if _, err := bot.Send(msg); err != nil {
+			rollbar.Error(err)
+			log.Panic(err)
+		}
+	}
+
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+	apiEntity.TelegramMessageConfig = msg
+
+	if update.Message.IsCommand() {
+		//	Extract the command from the Message.
+		switch update.Message.Command() {
+		case "start":
+			apiEntity.TelegramMessageConfig.ReplyMarkup = commandsKeyboard
+			utils.LogWithBot("🔗 Just send me a link that looks like: https://open.spotify.com/track/111111111111?si=xxxxxxxxx\nFeel free to use /help", apiEntity)
+		case "help":
+			apiEntity.TelegramMessageConfig.ReplyMarkup = commandsKeyboard
+			utils.LogWithBot("ℹ I understand:\n/status\n/send URL (aliases /s, /download /d, /play /p)\n/help\nOr just send me a link that looks like: https://open.spotify.com/track/", apiEntity)
+		case "status":
+			utils.LogWithBot("\U0001F9EA Beta test", apiEntity)
+		case "send", "download", "play", "s", "d", "p":
+			if len(update.Message.Entities) == 0 { // ignore any Message without Entities
+				return
+			}
+
+			cmds := update.Message.CommandArguments()
+			if len(cmds) == 0 {
+				utils.LogWithBot("\U0001F97A Missing URL after command, see /help.", apiEntity)
+				return
+			}
+			words := strings.Fields(cmds)
+			playlistURL := words[0]
+
+			go func(n int) {
+				ProcessUrl(n, playlistURL, update, msg)
+			}(update.Message.Date)
+
+		default:
+			utils.LogWithBot("😕 I dont know that command.", apiEntity)
+		}
+	}
+
+	switch update.Message.Text {
+	case "open":
+		msg.ReplyMarkup = commandsKeyboard
+		if _, err := bot.Send(msg); err != nil {
+			rollbar.Critical(err)
+			log.Panic(err)
+		}
+	case "close":
+		msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+		if _, err := bot.Send(msg); err != nil {
+			rollbar.Critical(err)
+			log.Panic(err)
+		}
+	default:
+		if len(update.Message.Entities) == 0 { // ignore any Message without Entities
+			return
+		}
+
+		if !update.Message.Entities[0].IsURL() { // ignore any Message without URL Entity type
+			return
+		}
+
+		playlistURL := update.Message.Text
+
+		go func(n int) {
+			ProcessUrl(n, playlistURL, update, msg)
+		}(update.Message.Date)
+
+	}
+}
+
 func main() {
 	updateConfig := tgbotapi.NewUpdate(0)
 	updateConfig.Timeout = 30
@@ -103,93 +196,8 @@ func main() {
 	updates := bot.GetUpdatesChan(updateConfig)
 
 	for update := range updates {
-		if update.Message == nil { // ignore any non-Message updates
-			continue
-		}
-		if update.CallbackQuery != nil {
-			// Respond to the callback query, telling Telegram to show the user
-			// a message with the data received.
-			callback := tgbotapi.NewCallback(update.CallbackQuery.ID, update.CallbackQuery.Data)
-			if _, err := bot.Request(callback); err != nil {
-				rollbar.Error(err)
-				log.Panic(err)
-			}
-
-			// And finally, send a message containing the data received.
-			msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data)
-			if _, err := bot.Send(msg); err != nil {
-				rollbar.Error(err)
-				log.Panic(err)
-			}
-		}
-
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-		apiEntity.TelegramMessageConfig = msg
-
-		if update.Message.IsCommand() {
-			//	Extract the command from the Message.
-			switch update.Message.Command() {
-			case "start":
-				apiEntity.TelegramMessageConfig.ReplyMarkup = commandsKeyboard
-				utils.LogWithBot("🔗 Just send me a link that looks like: https://open.spotify.com/track/111111111111?si=xxxxxxxxx\nFeel free to use /help", apiEntity)
-			case "help":
-				apiEntity.TelegramMessageConfig.ReplyMarkup = commandsKeyboard
-				utils.LogWithBot("ℹ I understand:\n/status\n/send URL (aliases /s, /download /d, /play /p)\n/help\nOr just send me a link that looks like: https://open.spotify.com/track/", apiEntity)
-			case "status":
-				utils.LogWithBot("\U0001F9EA Beta test", apiEntity)
-			case "send", "download", "play", "s", "d", "p":
-				if len(update.Message.Entities) == 0 { // ignore any Message without Entities
-					continue
-				}
-
-				cmds := update.Message.CommandArguments()
-				if len(cmds) == 0 {
-					utils.LogWithBot("\U0001F97A Missing URL after command, see /help.", apiEntity)
-					continue
-				}
-				words := strings.Fields(cmds)
-				playlistURL := words[0]
-
-				go func(n int) {
-					ProcessUrl(n, playlistURL, update, msg)
-				}(update.Message.Date)
-
-			default:
-				utils.LogWithBot("😕 I dont know that command.", apiEntity)
-			}
-		}
-
-		switch update.Message.Text {
-		case "open":
-			msg.ReplyMarkup = commandsKeyboard
-			if _, err := bot.Send(msg); err != nil {
-				rollbar.Critical(err)
-				log.Panic(err)
-			}
-		case "close":
-			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
-			if _, err := bot.Send(msg); err != nil {
-				rollbar.Critical(err)
-				log.Panic(err)
-			}
-		default:
-			if len(update.Message.Entities) == 0 { // ignore any Message without Entities
-				continue
-			}
-
-			if !update.Message.Entities[0].IsURL() { // ignore any Message without URL Entity type
-				continue
-			}
-
-			playlistURL := update.Message.Text
-			update := update
-			go func(n int) {
-				ProcessUrl(n, playlistURL, update, msg)
-			}(update.Message.Date)
-
-		}
-
-		//utils.LogWithBot("⏳ Please, wait...", apiEntity)
-
+		go func(update tgbotapi.Update) {
+			handleUpdate(update)
+		}(update)
 	}
 }
