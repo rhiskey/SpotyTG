@@ -17,7 +17,6 @@ Telegram Bot for music import from Spotify
 * [youtube-dl](http://ytdl-org.github.io/youtube-dl/download.html)
 * [ffmpeg](https://ffmpeg.org/download.html)
 
-___
 
 ### From Source (IN PROGRESS)
 #### Prerequisites
@@ -28,6 +27,8 @@ ___
 Make sure you have **golang**, **youtube-dl** and **ffmpeg** installed.
 
 `go install github.com/rhiskey/spotytg`
+
+
 ---
 ### Environment variables to pass:
 ```bash
@@ -36,4 +37,12 @@ ROLLBAR_TOKEN=xxxxxxxxxxxxxxxxxxxx111111
 TELEGRAM_APITOKEN=11111111111:XXXXXXXXXXXxxxxxxxxxx
 SPOTIFY_ID=xxxxxxxxxxxxxxxxxxxx111111
 SPOTIFY_SECRET=xxxxxxxxxxxxxxxxxxxx111111
+```
+
+Alternative build executable
+```shell
+env GOOS=linux GOARCH=amd64 go build .
+## OR 
+$env:GOOS = "linux" 
+go build .
 ```

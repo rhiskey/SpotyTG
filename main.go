@@ -36,7 +36,7 @@ var commandsKeyboard = tgbotapi.NewReplyKeyboard(
 func init() {
 	rollbar.SetToken(os.Getenv("ROLLBAR_TOKEN"))
 	rollbar.SetEnvironment("production")
-	rollbar.SetCodeVersion("v1.1.3") // optional Git hash/branch/tag (required for GitHub integration)
+	rollbar.SetCodeVersion("v1.1.4") // optional Git hash/branch/tag (required for GitHub integration)
 	//rollbar.SetServerHost("release.1")                  // optional override; defaults to hostname
 	rollbar.SetServerRoot("github.com/rhiskey/spotytg") // path of project (required for GitHub integration and non-project stacktrace collapsing)  - where repo is set up for the project, the server.root has to be "/"
 
