@@ -2,6 +2,8 @@
 
 [![Go](https://github.com/rhiskey/SpotyTG/actions/workflows/go.yml/badge.svg)](https://github.com/rhiskey/SpotyTG/actions/workflows/go.yml)
 [![CodeQL](https://github.com/rhiskey/SpotyTG/actions/workflows/codeql.yml/badge.svg)](https://github.com/rhiskey/SpotyTG/actions/workflows/codeql.yml)
+[![Telegram](https://img.shields.io/endpoint?color=neon&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fspotytg_bot)](https://telegram.dog/spotytg_bot)
+[![Telegram Group](https://img.shields.io/endpoint?color=neon&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fspotyvk)](https://telegram.dog/spotyvk)
 
 Telegram Bot for music import from Spotify
 
