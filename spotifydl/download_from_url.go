@@ -40,6 +40,7 @@ func DonwloadFromURL(ctx context.Context, spotifyURL string, api *structures.Api
 	//	playlistID = spotifyID
 	//	DownloadPlaylist(ctx, playlistID, api)
 	//} else
+
 	if strings.Contains(spotifyURL, "track") {
 		trackID = spotifyID
 		var err error

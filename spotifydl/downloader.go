@@ -19,10 +19,7 @@ func Downloader(url string, track spotify.FullTrack, api *structures.Api) string
 	_, err := ytdlCmd.Output()
 	if err != nil {
 		utils.LogWithBot("⛔ => An error occured while trying to download using youtube-dl", api)
-		//fmt.Println("=> An error occured while trying to download using youtube-dl")
 		utils.LogWithBot("⛔ Make sure you have youtube-dl and ffmpeg installed on this system. This was the command we tried to run:", api)
-		//fmt.Println("Make sure you have youtube-dl and ffmpeg installed on this system. This was the command we tried to run:")
-		//fmt.Println(ytdlCmd.String())
 		utils.LogWithBot(fmt.Sprintf(ytdlCmd.String()), api)
 		rollbar.Critical(err)
 		log.Fatal(err)

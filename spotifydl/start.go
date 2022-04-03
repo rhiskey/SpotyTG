@@ -93,8 +93,6 @@ func DownloadTrackList(cli structures.UserData, api *structures.Api) []string {
 	var savedFiles []string
 	var savedFile string
 	var searchTerm string
-	//utils.LogWithBot(fmt.Sprintf("🎵 Found ", len(cli.TrackList), " tracks"), api)
-	//utils.LogWithBot("🔎 Searching and downloading tracks", api)
 	for _, val := range cli.TrackList {
 		var artistNames []string
 		for _, artistInfo := range val.Artists {
@@ -114,12 +112,13 @@ func DownloadTrackList(cli structures.UserData, api *structures.Api) []string {
 		fmt.Println()
 		ytURL := "https://www.youtube.com/watch?v=" + track
 
-		utils.LogWithBot(fmt.Sprintf("🔄️ Downloading: %s", searchTerm), api)
-		savedFile = Downloader(ytURL, cli.TrackList[index], api)
-		savedFiles = append(savedFiles, savedFile)
-		fmt.Println()
+		// Maybe overhead
+		if len(ytURL) > 0 && ytURL != "MISSING" && ytURL != "(MISSING)" {
+			utils.LogWithBot(fmt.Sprintf("🔄️ Downloading: %s", searchTerm), api)
+			savedFile = Downloader(ytURL, cli.TrackList[index], api)
+			savedFiles = append(savedFiles, savedFile)
+			fmt.Println()
+		}
 	}
-	//utils.LogWithBot("✔ Download complete!", api)
-
 	return savedFiles
 }
